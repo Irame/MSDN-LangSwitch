@@ -1,0 +1,16 @@
+{
+  "name": "MSDN DE 2 EN",
+  "version": "1.0",
+  "description": "Switches from german MSDN to the english version",
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "page_action" :
+  {
+    "default_title" : "Switch to german version."
+  },
+  "permissions" : [
+    "declarativeContent", "webRequest", "webRequestBlocking", "<all_urls>", "tabs"
+  ],
+  "manifest_version": 2
+}
