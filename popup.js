@@ -1,6 +1,6 @@
-function showPopup() {
+function showPopup(state) {
 
-    var text = "Redirected from German MSDN page. Click here to go back.";
+    var text = 'Redirected from German MSDN page. <br /> <a id="goBackButton" href="javascript:void(0)">Click here to go back.</a>';
 
     var n = noty({
         text        : text,
@@ -17,6 +17,13 @@ function showPopup() {
             close : 'animated fadeOut',
             easing: 'swing',
             speed : 500
+        },
+        callback: {
+            afterShow: function() {
+                $("#goBackButton").click(function () {
+                    chrome.runtime.sendMessage({message: "reverseRedirect", state: state});
+                });
+            }
         }
       });
 
@@ -24,9 +31,7 @@ function showPopup() {
 }
 
 chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
-    if (request.greeting == "hello") {
-      sendResponse({farewell: "goodbye"});
+    if (request.message == "showPopup") {
+        showPopup(request.state);
     }
-    // TODO
-    showPopup();
-  });
+});
