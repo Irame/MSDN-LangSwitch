@@ -27,12 +27,12 @@ chrome.runtime.onInstalled.addListener(function() {
 	chrome.webRequest.onCompleted.addListener(function(details) {
 		if (state[details.tabId].isRedirecting) {
 			state[details.tabId].isRedirecting = false;
-			
+
 			// Show popup
-			chrome.tabs.executeScript(null, { file: "vendor/jquery-3.1.1.min.js" }, function() {
-				chrome.tabs.executeScript(null, { file: "vendor/noty/jquery.noty.packaged.min.js" }, function() {
-					chrome.tabs.insertCSS(null, {file: "vendor/noty/animate.css"}, function() {
-						chrome.tabs.executeScript(null, { file: "popup.js" }, function() {
+			chrome.tabs.executeScript(details.tabId, { file: "vendor/jquery-3.1.1.min.js" }, function() {
+				chrome.tabs.executeScript(details.tabId, { file: "vendor/noty/jquery.noty.packaged.min.js" }, function() {
+					chrome.tabs.insertCSS(details.tabId, {file: "vendor/noty/animate.css"}, function() {
+						chrome.tabs.executeScript(details.tabId, { file: "popup.js" }, function() {
 							// Send message to tab
 							chrome.tabs.sendMessage(details.tabId, {message: "showPopup", state: state[details.tabId]}, function(response) {
 							  // no response
