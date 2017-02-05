@@ -5,6 +5,10 @@
   "background": {
     "scripts": ["background.js"]
   },
+  "permissions": [
+      "activeTab",
+      "https://msdn.microsoft.com/en-us/*"
+    ],
   "page_action" :
   {
     "default_title" : "Switch to german version."
