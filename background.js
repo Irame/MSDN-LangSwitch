@@ -1,31 +1,38 @@
 var state = [];
 
-chrome.webRequest.onBeforeRequest.addListener(function(details) {
-	if (!state[details.tabId]) {
-		state[details.tabId] = {};
+function getTabState(tabId) {
+	if (!state[tabId]) {
+		state[tabId] = {};
 	}
+	
+	return state[tabId];
+}
 
-	state[details.tabId].originalURL   = details.url;
-	state[details.tabId].tabID 		   = details.tabId;
-	state[details.tabId].isRedirecting = false;
+chrome.webRequest.onBeforeRequest.addListener(function(details) {
+	tabState = getTabState(details.tabId);
 
-	if (!state[details.tabId].doNotRedirect) {
-		state[details.tabId].isRedirecting = true;
+	tabState.originalURL   = details.url;
+	tabState.tabID 		   = details.tabId;
+	tabState.isRedirecting = false;
+
+	if (!tabState.doNotRedirect) {
+		tabState.isRedirecting = true;
 		return { redirectUrl: details.url.replace("de-de", "en-us") };
 	}
 }, {
-	urls : ["https://msdn.microsoft.com/de-de/*"]
+	urls : ["https://*.microsoft.com/de-de/*"]
 }, ["blocking"]);
 
 chrome.webRequest.onBeforeRequest.addListener(function(details) {
-	state[details.tabId].doNotRedirect = false;
+	getTabState(details.tabId).doNotRedirect = false;
 }, {
-	urls : ["https://msdn.microsoft.com/en-us/*"]
+	urls : ["https://*.microsoft.com/en-us/*"]
 });
 
 chrome.webRequest.onCompleted.addListener(function(details) {
-	if (state[details.tabId].isRedirecting) {
-		state[details.tabId].isRedirecting = false;
+	tabState = getTabState(details.tabId);
+	if (tabState.isRedirecting) {
+		tabState.isRedirecting = false;
 
 		// Show popup
 		chrome.tabs.executeScript(details.tabId, { file: "vendor/jquery-3.1.1.min.js" }, function() {
@@ -33,7 +40,7 @@ chrome.webRequest.onCompleted.addListener(function(details) {
 				chrome.tabs.insertCSS(details.tabId, {file: "vendor/noty/animate.css"}, function() {
 					chrome.tabs.executeScript(details.tabId, { file: "popup.js" }, function() {
 						// Send message to tab
-						chrome.tabs.sendMessage(details.tabId, {message: "showPopup", state: state[details.tabId]}, function(response) {
+						chrome.tabs.sendMessage(details.tabId, {message: "showPopup", state: tabState}, function(response) {
 						  // no response
 						});
 					});
@@ -42,26 +49,30 @@ chrome.webRequest.onCompleted.addListener(function(details) {
 		});
 	}
 }, {
-	urls : ["https://msdn.microsoft.com/en-us/*"]
+	urls : ["https://*.microsoft.com/en-us/*"]
 });
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	if (request.message == "reverseRedirect") {
 		var tabID = request.state.tabID;
-		state[tabID].doNotRedirect = true;
+		getTabState(tabID).doNotRedirect = true;
 		chrome.tabs.update(tabID, {url: request.state.originalURL});
 	}
 });
 
 
 chrome.pageAction.onClicked.addListener(function(tab) {
-	state[tab.id].doNotRedirect = !state[tab.id].doNotRedirect;
-	chrome.tabs.update(tab.id, {url: state[tab.id].originalURL});
+	tabState = getTabState(tab.id);
+	tabState.doNotRedirect = !tabState.doNotRedirect;
+	if (tabState.doNotRedirect)
+		chrome.tabs.update(tab.id, {url: tab.url.replace("en-us", "de-de")});
+	else
+		chrome.tabs.update(tab.id, {url: tab.url.replace("de-de", "en-us")});
 });
 
 function updatePageActionTitle(tabId) {
 	var pageActionTitle;
-	if (state[tabId].doNotRedirect)
+	if (getTabState(tabId).doNotRedirect)
 		pageActionTitle = "Switch to english version.";
 	else
 		pageActionTitle = "Switch to german version.";
@@ -83,10 +94,10 @@ chrome.runtime.onInstalled.addListener(function() {
 		{
 			conditions: [
 				new chrome.declarativeContent.PageStateMatcher({
-					pageUrl: { hostEquals: 'msdn.microsoft.com', pathPrefix: '/en-us' },
+					pageUrl: { hostSuffix: '.microsoft.com', pathPrefix: '/en-us' },
 				}),
 				new chrome.declarativeContent.PageStateMatcher({
-					pageUrl: { hostEquals: 'msdn.microsoft.com', pathPrefix: '/de-de' },
+					pageUrl: { hostSuffix: '.microsoft.com', pathPrefix: '/de-de' },
 				})
 			],
 			actions: [ new chrome.declarativeContent.ShowPageAction() ]

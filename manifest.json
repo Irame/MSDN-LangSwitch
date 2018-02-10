@@ -1,7 +1,7 @@
 {
     "name": "MSDN DE 2 EN",
-    "version": "1.0",
-    "description": "Switches from german MSDN to the english version",
+    "version": "1.1",
+    "description": "Switches from german Microsoft pages to the english version",
     "background": {
         "scripts": ["background.js"]
     },
@@ -13,8 +13,8 @@
         "webRequest",
         "webRequestBlocking",
         "activeTab",
-        "https://msdn.microsoft.com/en-us/*",
-        "https://msdn.microsoft.com/de-de/*"
+        "https://*.microsoft.com/en-us/*",
+        "https://*.microsoft.com/de-de/*"
     ],
     "manifest_version": 2
 }

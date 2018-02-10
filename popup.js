@@ -1,6 +1,6 @@
 function showPopup(state) {
 
-    var text = 'Redirected from German MSDN page. <br /> <a id="goBackButton" href="javascript:void(0)" style="color: #00709f">Click here to go back.</a>';
+    var text = 'Redirected from German Microsoft page. <br /> <a id="goBackButton" href="javascript:void(0)" style="color: #00709f">Click here to go back.</a>';
 
     var n = noty({
         text        : text,
